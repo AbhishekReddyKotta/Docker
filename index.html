@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CinePass India - Book Movie Tickets Online</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#fff1f2',
+              500: '#f43f5e',
+              600: '#e11d48',
+              700: '#be123c',
+              dark: '#0f172a',
+              card: '#1e293b',
+              accent: '#38bdf8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom curved cinema screen effect */
+    .screen-curve {
+      height: 14px;
+      width: 82%;
+      margin: 0 auto;
+      border-top: 4px solid #38bdf8;
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      box-shadow: 0 -12px 35px -3px rgba(56, 189, 248, 0.45);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background-color: #334155;
+      border-radius: 9999px;
+    }
+    /* Seat button transition styles */
+    .seat {
+      transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .seat:hover:not(.occupied) {
+      transform: scale(1.15);
+    }
+  </style>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 font-sans min-h-screen flex flex-col selection:bg-rose-500 selection:text-white pb-16 md:pb-8">
+
+  <header class="sticky top-0 z-40 bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-800 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="resetToHome()">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center shadow-lg shadow-rose-600/30">
+          <i class="fa-solid fa-clapperboard text-white text-lg"></i>
+        </div>
+        <div>
+          <div class="text-xl font-extrabold tracking-tight flex items-center">
+            <span>Cine</span><span class="text-rose-500">Pass</span>
+            <span class="ml-1.5 px-1.5 py-0.5 text-[10px] uppercase font-bold tracking-widest bg-rose-500/20 text-rose-400 rounded">IN</span>
+          </div>
+          <p class="text-[11px] text-slate-400 hidden sm:block">India's Ultimate Cinema Hub</p>
+        </div>
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div class="hidden md:flex flex-1 max-w-md mx-6 relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+        <input 
+          type="text" 
+          id="movieSearchInput" 
+          placeholder="Search for Movies, Theatres, or Genres..." 
+          class="w-full pl-10 pr-4 py-2 bg-slate-900/90 border border-slate-700/80 rounded-full text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:border-rose-500 transition shadow-inner"
+          oninput="handleSearch(this.value)"
+        />
+      </div>
+
+      <!-- City Selector & User Controls -->
+      <div class="flex items-center gap-3">
+        <!-- City Dropdown -->
+        <div class="relative">
+          <button id="cityDropdownBtn" onclick="toggleCityDropdown()" class="flex items-center gap-2 bg-slate-800/90 hover:bg-slate-700/90 text-slate-200 text-xs sm:text-sm px-3.5 py-2 rounded-lg border border-slate-700 transition">
+            <i class="fa-solid fa-location-dot text-rose-500"></i>
+            <span id="selectedCityLabel" class="font-medium">Hyderabad</span>
+            <i class="fa-solid fa-chevron-down text-slate-400 text-xs"></i>
+          </button>
+          
+          <div id="cityDropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2 z-50">
+            <div class="text-[11px] font-semibold text-slate-400 px-3 py-1 uppercase tracking-wider">Popular Cities</div>
+            <button onclick="selectCity('Hyderabad')" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-rose-500 hover:text-white flex items-center justify-between">Hyderabad <span class="text-xs opacity-75">TS</span></button>
+            <button onclick="selectCity('Mumbai')" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-rose-500 hover:text-white flex items-center justify-between">Mumbai <span class="text-xs opacity-75">MH</span></button>
+            <button onclick="selectCity('Bengaluru')" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-rose-500 hover:text-white flex items-center justify-between">Bengaluru <span class="text-xs opacity-75">KA</span></button>
+            <button onclick="selectCity('Delhi NCR')" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-rose-500 hover:text-white flex items-center justify-between">Delhi NCR <span class="text-xs opacity-75">DL</span></button>
+            <button onclick="selectCity('Chennai')" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-rose-500 hover:text-white flex items-center justify-between">Chennai <span class="text-xs opacity-75">TN</span></button>
+            <button onclick="selectCity('Kolkata')" class="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-rose-500 hover:text-white flex items-center justify-between">Kolkata <span class="text-xs opacity-75">WB</span></button>
+          </div>
+        </div>
+
+        <button class="bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-medium px-4 py-2 rounded-lg shadow-md shadow-rose-600/30 transition">
+          Sign In
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+    
+    <!-- Flow Stepper Indicator -->
+    <div class="mb-6 bg-slate-900/60 p-3 rounded-xl border border-slate-800/80 flex items-center justify-between overflow-x-auto custom-scroll text-xs font-semibold text-slate-400">
+      <div class="flex items-center gap-2 cursor-pointer text-rose-400 shrink-0" onclick="goToStep(1)">
+        <span class="w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs">1</span>
+        <span>Select Movie</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-slate-600 text-xs mx-2"></i>
+      <div class="flex items-center gap-2 cursor-pointer shrink-0" id="step-nav-2" onclick="goToStep(2)">
+        <span class="w-6 h-6 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-xs" id="step-badge-2">2</span>
+        <span id="step-label-2">Theatres & Shows</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-slate-600 text-xs mx-2"></i>
+      <div class="flex items-center gap-2 cursor-pointer shrink-0" id="step-nav-3" onclick="goToStep(3)">
+        <span class="w-6 h-6 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-xs" id="step-badge-3">3</span>
+        <span id="step-label-3">Seat Map</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-slate-600 text-xs mx-2"></i>
+      <div class="flex items-center gap-2 cursor-pointer shrink-0" id="step-nav-4" onclick="goToStep(4)">
+        <span class="w-6 h-6 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center text-xs" id="step-badge-4">4</span>
+        <span id="step-label-4">F&B & Payment</span>
+      </div>
+    </div>
+
+    <!-- Notification Toast Element -->
+    <div id="toast" class="hidden fixed bottom-6 right-6 z-50 bg-slate-800 border border-slate-700 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 transition-all duration-300">
+      <i id="toastIcon" class="fa-solid fa-circle-info text-rose-500"></i>
+      <span id="toastMsg" class="text-sm">Notification text</span>
+    </div>
+
+    <section id="step1-view" class="block space-y-6">
+      
+      <!-- Hero Banner / Highlights -->
+      <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-rose-950/60 via-slate-900 to-slate-900 border border-slate-800 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
+        <div class="space-y-3 z-10 max-w-xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 text-rose-400 text-xs font-semibold tracking-wider uppercase border border-rose-500/30">
+            <i class="fa-solid fa-fire-flame-curved"></i> Now Showing in Indian Cinemas
+          </div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            Experience Blockbusters on <span class="bg-gradient-to-r from-rose-400 to-amber-400 bg-clip-text text-transparent">IMAX & 4DX</span>
+          </h1>
+          <p class="text-sm text-slate-400">
+            Book seats for the biggest Pan-India spectacles across Telugu, Hindi, Tamil & English in your favourite multiplexes: PVR INOX, Cinepolis, and Asian Cinemas.
+          </p>
+        </div>
+        <div class="flex items-center gap-4 text-xs font-medium text-slate-300">
+          <div class="bg-slate-800/80 px-4 py-3 rounded-xl border border-slate-700 text-center">
+            <span class="block text-xl font-bold text-rose-400">4000+</span>
+            Screens Across India
+          </div>
+          <div class="bg-slate-800/80 px-4 py-3 rounded-xl border border-slate-700 text-center">
+            <span class="block text-xl font-bold text-emerald-400">₹0</span>
+            Cancellation Fee*
+          </div>
+        </div>
+      </div>
+
+      <!-- Language & Genre Filter Buttons -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pt-2">
+        <div class="flex flex-wrap items-center gap-2" id="languageFilters">
+          <button onclick="filterLanguage('ALL')" class="lang-btn active bg-rose-600 text-white px-4 py-1.5 rounded-full text-xs font-semibold shadow transition">All Languages</button>
+          <button onclick="filterLanguage('Telugu')" class="lang-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-1.5 rounded-full text-xs font-semibold transition">Telugu</button>
+          <button onclick="filterLanguage('Hindi')" class="lang-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-1.5 rounded-full text-xs font-semibold transition">Hindi</button>
+          <button onclick="filterLanguage('Tamil')" class="lang-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-1.5 rounded-full text-xs font-semibold transition">Tamil</button>
+          <button onclick="filterLanguage('English')" class="lang-btn bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-1.5 rounded-full text-xs font-semibold transition">English</button>
+        </div>
+        
+        <div class="text-xs text-slate-400 flex items-center gap-1.5">
+          <span>Showing in:</span>
+          <span class="font-bold text-slate-200 underline decoration-rose-500" id="filterCityLabel">Hyderabad</span>
+        </div>
+      </div>
+
+      <!-- Movie Cards Grid -->
+      <div id="moviesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+        <!-- Dynamically injected via JavaScript -->
+      </div>
+    </section>
+
+    <section id="step2-view" class="hidden space-y-6">
+      
+      <!-- Selected Movie Strip -->
+      <div id="theatreMovieStrip" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+        <!-- Populated via script -->
+      </div>
+
+      <!-- Date Selection Carousel -->
+      <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+        <h3 class="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-3">Select Date</h3>
+        <div class="flex items-center gap-3 overflow-x-auto custom-scroll pb-2" id="datePickerContainer">
+          <!-- Dynamically populated dates -->
+        </div>
+      </div>
+
+      <!-- Multiplex / Theatres Listing with Showtimes -->
+      <div class="space-y-4" id="theatresList">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <section id="step3-view" class="hidden space-y-6">
+      
+      <!-- Seat Header summary -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <span id="seatMapMovieTitle">Movie Name</span>
+            <span id="seatMapFormat" class="text-xs px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-medium">3D IMAX</span>
+          </h2>
+          <p class="text-xs text-slate-400" id="seatMapTheatreSub">PVR Next Galleria Mall, Punjagutta | Today, 04:30 PM</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <span class="text-xs text-slate-400 block">Selected: <strong id="selectedSeatsCount" class="text-white">0</strong> Seats</span>
+            <span class="text-base font-bold text-emerald-400" id="selectedSeatsCost">₹0</span>
+          </div>
+          <button onclick="proceedToPaymentView()" id="proceedToPayBtn" disabled class="disabled:opacity-40 disabled:cursor-not-allowed bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-rose-600/30 transition">
+            Proceed
+          </button>
+        </div>
+      </div>
+
+      <!-- Seat Map Visualizer -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-8 flex flex-col items-center">
+        
+        <!-- Cinema Screen Curve Indicator -->
+        <div class="w-full max-w-2xl mb-10 text-center">
+          <div class="screen-curve mb-3"></div>
+          <p class="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">All eyes this way • Screen Here</p>
+        </div>
+
+        <!-- Seat Grid container -->
+        <div id="seatLayoutContainer" class="w-full max-w-3xl overflow-x-auto custom-scroll pb-6">
+          <!-- Dynamic seat tiers created via JS -->
+        </div>
+
+        <!-- Seat Color Legend -->
+        <div class="flex flex-wrap items-center justify-center gap-6 mt-6 pt-4 border-t border-slate-800/80 text-xs text-slate-300">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded border border-slate-700 bg-slate-800"></div>
+            <span>Available</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded bg-rose-600 shadow-md shadow-rose-600/50"></div>
+            <span>Selected</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded bg-slate-700 opacity-30 cursor-not-allowed"></div>
+            <span>Sold</span>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section id="step4-view" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- F&B Add-ons (Left Column) -->
+        <div class="lg:col-span-7 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-bowl-food text-amber-400"></i> Grab a Bite! (Popcorn & Snacks)
+            </h2>
+            <span class="text-xs text-slate-400">Pre-book to save up to 20%</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="fnbContainer">
+            <!-- F&B Items generated via JS -->
+          </div>
+        </div>
+
+        <!-- Order Summary & Payment Options (Right Column) -->
+        <div class="lg:col-span-5">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 sticky top-24 shadow-2xl space-y-5">
+            <h3 class="text-base font-bold text-white pb-3 border-b border-slate-800 flex items-center justify-between">
+              <span>Booking Summary</span>
+              <span class="text-xs px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-medium">Cinema Ticket</span>
+            </h3>
+
+            <!-- Ticket details review -->
+            <div class="text-xs space-y-2">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Movie</span>
+                <span class="font-semibold text-slate-200" id="summaryMovie">Devara: Part 1</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Theatre</span>
+                <span class="font-semibold text-slate-200 text-right" id="summaryTheatre">PVR INOX, Punjagutta</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Showtime</span>
+                <span class="font-semibold text-slate-200" id="summaryShowtime">Today, 04:30 PM</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Seats</span>
+                <span class="font-bold text-rose-400" id="summarySeats">C5, C6 (2 Tickets)</span>
+              </div>
+            </div>
+
+            <!-- Price Breakdown Calculation -->
+            <div class="border-t border-dashed border-slate-800 pt-3 text-xs space-y-2">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Ticket Base Fare</span>
+                <span class="text-slate-200 font-medium" id="sumBaseFare">₹0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Convenience Fee (incl. 18% GST)</span>
+                <span class="text-slate-200 font-medium" id="sumFees">₹0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Food & Beverages</span>
+                <span class="text-slate-200 font-medium" id="sumFnb">₹0</span>
+              </div>
+              <div class="border-t border-slate-800 pt-3 flex justify-between items-center text-sm font-bold text-white">
+                <span>Total Amount to Pay</span>
+                <span class="text-lg text-emerald-400" id="sumTotalPayable">₹0</span>
+              </div>
+            </div>
+
+            <!-- Payment Methods: Indian context (UPI, Cards, NetBanking) -->
+            <div class="space-y-3 pt-2">
+              <label class="text-xs font-semibold text-slate-300 block">Select Payment Method</label>
+              
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="selectPaymentMethod('upi')" id="btnMethodUPI" class="payment-method-btn active p-2.5 rounded-xl border border-rose-500 bg-rose-500/10 text-xs font-semibold flex items-center justify-center gap-2 text-rose-400">
+                  <i class="fa-solid fa-mobile-screen-button"></i> UPI / QR
+                </button>
+                <button type="button" onclick="selectPaymentMethod('card')" id="btnMethodCard" class="payment-method-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold flex items-center justify-center gap-2 text-slate-400">
+                  <i class="fa-regular fa-credit-card"></i> Card / NetBanking
+                </button>
+              </div>
+
+              <!-- UPI Details Box -->
+              <div id="upiBox" class="bg-slate-800/60 p-3 rounded-xl border border-slate-700/80 space-y-2">
+                <p class="text-[11px] text-slate-300">Enter UPI ID (GPay, PhonePe, Paytm)</p>
+                <div class="flex gap-2">
+                  <input type="text" id="upiIdInput" placeholder="username@okhdfcbank" value="cinelover@okaxis" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500">
+                </div>
+                <p class="text-[10px] text-slate-500"><i class="fa-solid fa-shield-halved text-emerald-500"></i> Instant QR or payment prompt will be dispatched</p>
+              </div>
+
+              <!-- Card Details Box (hidden by default) -->
+              <div id="cardBox" class="hidden bg-slate-800/60 p-3 rounded-xl border border-slate-700/80 space-y-2">
+                <input type="text" placeholder="Card Number (XXXX XXXX XXXX XXXX)" value="4532 •••• •••• 9012" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none">
+                <div class="grid grid-cols-2 gap-2">
+                  <input type="text" placeholder="MM/YY" value="08/29" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none">
+                  <input type="password" placeholder="CVV" value="888" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none">
+                </div>
+              </div>
+
+              <!-- Final Pay Button -->
+              <button onclick="triggerPaymentProcessing()" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/30 text-sm flex items-center justify-center gap-2 transition">
+                <i class="fa-solid fa-lock"></i>
+                <span id="finalPayBtnLabel">Pay ₹0 Securely</span>
+              </button>
+              
+              <div class="flex items-center justify-center gap-4 text-[10px] text-slate-500 pt-1">
+                <span><i class="fa-solid fa-check text-rose-500 mr-1"></i> 256-Bit Encrypted</span>
+                <span><i class="fa-solid fa-qrcode text-rose-500 mr-1"></i> UPI Enabled</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div id="ticketModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+    <div class="bg-[#131b2e] border border-slate-700 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-in relative">
+      
+      <!-- Top banner -->
+      <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-4 text-center text-white relative">
+        <button onclick="closeConfirmationModal()" class="absolute right-4 top-4 text-white/80 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2 text-2xl">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h3 class="font-extrabold text-lg">Booking Confirmed!</h3>
+        <p class="text-xs text-emerald-100">Booking ID: <span id="modalBookingId" class="font-mono font-bold tracking-wider">CP-IN-89327</span></p>
+      </div>
+
+      <!-- Ticket Cut-out layout -->
+      <div class="p-6 space-y-4">
+        <div>
+          <h2 class="text-xl font-extrabold text-white" id="modalMovieName">Movie Name</h2>
+          <p class="text-xs text-slate-400" id="modalCinemaName">PVR INOX: Forum Sujana Mall</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 text-center text-xs">
+          <div>
+            <span class="text-slate-500 block text-[10px] uppercase">Date</span>
+            <span class="font-bold text-slate-200" id="modalDate">Today</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block text-[10px] uppercase">Time</span>
+            <span class="font-bold text-slate-200" id="modalTime">04:30 PM</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block text-[10px] uppercase">Seats</span>
+            <span class="font-bold text-rose-400" id="modalSeats">A3, A4</span>
+          </div>
+        </div>
+
+        <!-- Simulated QR Code for Theatre Entry -->
+        <div class="flex flex-col items-center justify-center p-4 bg-white rounded-2xl">
+          <!-- Inline SVG QR Code -->
+          <svg class="w-32 h-32 text-slate-900" viewBox="0 0 100 100" fill="currentColor">
+            <rect width="100" height="100" fill="#ffffff"/>
+            <!-- Top-Left Target -->
+            <rect x="10" y="10" width="26" height="26" fill="#0f172a" rx="2"/>
+            <rect x="15" y="15" width="16" height="16" fill="#ffffff" rx="1"/>
+            <rect x="19" y="19" width="8" height="8" fill="#0f172a"/>
+            <!-- Top-Right Target -->
+            <rect x="64" y="10" width="26" height="26" fill="#0f172a" rx="2"/>
+            <rect x="69" y="15" width="16" height="16" fill="#ffffff" rx="1"/>
+            <rect x="73" y="19" width="8" height="8" fill="#0f172a"/>
+            <!-- Bottom-Left Target -->
+            <rect x="10" y="64" width="26" height="26" fill="#0f172a" rx="2"/>
+            <rect x="15" y="69" width="16" height="16" fill="#ffffff" rx="1"/>
+            <rect x="19" y="73" width="8" height="8" fill="#0f172a"/>
+            <!-- Pattern Squares -->
+            <rect x="42" y="12" width="6" height="6" fill="#0f172a"/>
+            <rect x="52" y="12" width="6" height="6" fill="#0f172a"/>
+            <rect x="42" y="24" width="6" height="14" fill="#0f172a"/>
+            <rect x="52" y="32" width="6" height="6" fill="#0f172a"/>
+            <rect x="14" y="44" width="6" height="6" fill="#0f172a"/>
+            <rect x="24" y="48" width="8" height="6" fill="#0f172a"/>
+            <rect x="36" y="44" width="8" height="8" fill="#0f172a"/>
+            <rect x="48" y="46" width="6" height="12" fill="#0f172a"/>
+            <rect x="62" y="44" width="10" height="6" fill="#0f172a"/>
+            <rect x="78" y="46" width="10" height="10" fill="#0f172a"/>
+            <rect x="42" y="64" width="8" height="6" fill="#0f172a"/>
+            <rect x="54" y="68" width="6" height="10" fill="#0f172a"/>
+            <rect x="68" y="64" width="14" height="6" fill="#0f172a"/>
+            <rect x="74" y="74" width="12" height="12" fill="#0f172a"/>
+            <rect x="44" y="80" width="6" height="6" fill="#0f172a"/>
+          </svg>
+          <span class="text-[11px] font-bold text-slate-800 tracking-wider mt-1.5">SCAN AT TURNSTILE GATE</span>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span>Amount Paid: <strong class="text-white" id="modalPaidAmount">₹650</strong></span>
+          <span class="text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i>M-Ticket Sent to WhatsApp</span>
+        </div>
+
+        <button onclick="closeConfirmationModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-xl text-xs transition">
+          Done / Book Another Movie
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    /* State Management */
+    const appState = {
+      currentStep: 1,
+      selectedCity: 'Hyderabad',
+      selectedLanguage: 'ALL',
+      selectedMovie: null,
+      selectedDate: null,
+      selectedTheatre: null,
+      selectedTime: null,
+      selectedSeats: [], // array of seat objects: { id, label, tier, price }
+      fnbCart: {}, // itemId: count
+      paymentMethod: 'upi',
+      searchQuery: ''
+    };
+
+    /* Indian Movie Catalog with Languages & Ratings */
+    const MOVIES_DATABASE = [
+      {
+        id: 'm1',
+        title: 'Devara: Part 1',
+        languages: ['Telugu', 'Hindi', 'Tamil'],
+        certificate: 'U/A 16+',
+        genre: 'Action / Drama',
+        rating: '9.1',
+        votes: '142K',
+        runtime: '2h 55m',
+        posterColor: 'from-amber-700 to-rose-950',
+        image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500&auto=format&fit=crop&q=60',
+        formats: ['2D', 'IMAX 2D', '4DX']
+      },
+      {
+        id: 'm2',
+        title: 'Kalki 2898 AD',
+        languages: ['Telugu', 'Hindi', 'Tamil', 'English'],
+        certificate: 'U/A',
+        genre: 'Sci-Fi / Epic',
+        rating: '9.4',
+        votes: '380K',
+        runtime: '3h 01m',
+        posterColor: 'from-blue-900 to-indigo-950',
+        image: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=60',
+        formats: ['3D', 'IMAX 3D']
+      },
+      {
+        id: 'm3',
+        title: 'Stree 2: Sarkate Ka Aatank',
+        languages: ['Hindi'],
+        certificate: 'U/A',
+        genre: 'Horror / Comedy',
+        rating: '8.8',
+        votes: '220K',
+        runtime: '2h 28m',
+        posterColor: 'from-purple-950 to-slate-900',
+        image: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=500&auto=format&fit=crop&q=60',
+        formats: ['2D']
+      },
+      {
+        id: 'm4',
+        title: 'The Greatest of All Time (GOAT)',
+        languages: ['Tamil', 'Telugu', 'Hindi'],
+        certificate: 'U/A 13+',
+        genre: 'Action / Sci-Fi Thriller',
+        rating: '8.6',
+        votes: '98K',
+        runtime: '2h 59m',
+        posterColor: 'from-emerald-950 to-slate-900',
+        image: 'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=500&auto=format&fit=crop&q=60',
+        formats: ['2D', 'IMAX 2D']
+      },
+      {
+        id: 'm5',
+        title: 'Deadpool & Wolverine',
+        languages: ['English', 'Hindi', 'Telugu'],
+        certificate: 'A',
+        genre: 'Action / Comedy',
+        rating: '9.2',
+        votes: '310K',
+        runtime: '2h 08m',
+        posterColor: 'from-red-950 to-amber-950',
+        image: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=500&auto=format&fit=crop&q=60',
+        formats: ['3D', '4DX 3D', 'IMAX 3D']
+      },
+      {
+        id: 'm6',
+        title: 'Pushpa 2: The Rule',
+        languages: ['Telugu', 'Hindi', 'Tamil'],
+        certificate: 'U/A 16+',
+        genre: 'Mass Action / Crime',
+        rating: '9.7',
+        votes: '410K',
+        runtime: '3h 10m',
+        posterColor: 'from-orange-950 to-slate-900',
+        image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500&auto=format&fit=crop&q=60',
+        formats: ['2D', 'IMAX 2D']
+      }
+    ];
+
+    /* Multiplex Chains in Indian Cities */
+    const THEATRES_BY_CITY = {
+      'Hyderabad': [
+        { id: 'th1', name: 'Prasads Multiplex: Large Screen & IMAX', location: 'Necklace Road', cancellation: true },
+        { id: 'th2', name: 'PVR INOX: Next Galleria Mall', location: 'Punjagutta', cancellation: true },
+        { id: 'th3', name: 'AMB Cinemas: Screen 1 Laser', location: 'Gachibowli', cancellation: false },
+        { id: 'th4', name: 'Cinepolis: DSL Virtue Mall', location: 'Uppal', cancellation: true }
+      ],
+      'Mumbai': [
+        { id: 'th5', name: 'PVR ICON: Phoenix Palladium', location: 'Lower Parel', cancellation: true },
+        { id: 'th6', name: 'INOX: Megaplex Inorbit Mall', location: 'Malad West', cancellation: true },
+        { id: 'th7', name: 'Cinepolis: Viviana Mall', location: 'Thane', cancellation: false }
+      ],
+      'Bengaluru': [
+        { id: 'th8', name: 'PVR: Forum South Bangalore', location: 'Kanakapura Road', cancellation: true },
+        { id: 'th9', name: 'INOX: Nexus Mall', location: 'Koramangala', cancellation: true },
+        { id: 'th10', name: 'Urvashi Digital 4K Cinema', location: 'Lalbagh Road', cancellation: false }
+      ],
+      'Delhi NCR': [
+        { id: 'th11', name: 'PVR Director’s Cut: Ambience Mall', location: 'Vasant Kunj', cancellation: true },
+        { id: 'th12', name: 'Cinepolis: DLF Avenue', location: 'Saket', cancellation: true }
+      ],
+      'Chennai': [
+        { id: 'th13', name: 'Sathyam Cinemas (SPI)', location: 'Royapettah', cancellation: true },
+        { id: 'th14', name: 'PVR: VR Chennai Mall', location: 'Anna Nagar', cancellation: true }
+      ],
+      'Kolkata': [
+        { id: 'th15', name: 'INOX: Quest Mall', location: 'Park Circus', cancellation: true },
+        { id: 'th16', name: 'Cinepolis: Acropolis Mall', location: 'Kasba', cancellation: true }
+      ]
+    };
+
+    /* Seat Tiers & Standard Pricing in INR */
+    const SEAT_TIERS = {
+      recliner: { name: 'VIP Recliner', price: 450, rows: ['A'] },
+      prime: { name: 'Prime Plus', price: 295, rows: ['B', 'C', 'D'] },
+      classic: { name: 'Classic Standard', price: 175, rows: ['E', 'F', 'G', 'H'] }
+    };
+
+    /* Indian Multiplex Food & Beverage Options */
+    const FNB_ITEMS = [
+      { id: 'f1', name: 'Salted Caramel Popcorn (Jumbo)', price: 340, desc: 'Fresh crunchy warm popcorn with caramel glaze', icon: 'fa-wheat-awn' },
+      { id: 'f2', name: 'Paneer Tikka Kathi Roll', price: 220, desc: 'Grilled spiced paneer wrap with mint chutney', icon: 'fa-bread-slice' },
+      { id: 'f3', name: 'Crispy Punjabi Samosa (2 Pcs)', price: 160, desc: 'With sweet saunth & spicy pudina chutney', icon: 'fa-bowl-rice' },
+      { id: 'f4', name: 'Loaded Cheese & Salsa Nachos', price: 270, desc: 'Warm corn tortillas with melted jalapeno cheese', icon: 'fa-cookie' },
+      { id: 'f5', name: 'Cold Coffee Frappe (400ml)', price: 190, desc: 'Creamy thick brew topped with chocolate drizzle', icon: 'fa-mug-hot' }
+    ];
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.innerText = message;
+      if (isError) {
+        toastIcon.className = 'fa-solid fa-circle-exclamation text-rose-500';
+      } else {
+        toastIcon.className = 'fa-solid fa-circle-check text-emerald-400';
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3200);
+    }
+
+    function toggleCityDropdown() {
+      const menu = document.getElementById('cityDropdownMenu');
+      menu.classList.toggle('hidden');
+    }
+
+    function selectCity(cityName) {
+      appState.selectedCity = cityName;
+      document.getElementById('selectedCityLabel').innerText = cityName;
+      document.getElementById('filterCityLabel').innerText = cityName;
+      document.getElementById('cityDropdownMenu').classList.add('hidden');
+      showToast(`Location set to ${cityName}`);
+      renderMoviesList();
+      if (appState.currentStep === 2) {
+        renderTheatresView();
+      }
+    }
+
+    function resetToHome() {
+      appState.selectedMovie = null;
+      appState.selectedSeats = [];
+      appState.fnbCart = {};
+      goToStep(1);
+    }
+
+    function goToStep(stepNumber) {
+      if (stepNumber > 1 && !appState.selectedMovie) {
+        showToast("Please choose a movie first!", true);
+        return;
+      }
+      if (stepNumber > 2 && (!appState.selectedTheatre || !appState.selectedTime)) {
+        showToast("Please choose a theatre and showtime first!", true);
+        return;
+      }
+      if (stepNumber > 3 && appState.selectedSeats.length === 0) {
+        showToast("Please choose at least 1 seat!", true);
+        return;
+      }
+
+      appState.currentStep = stepNumber;
+
+      // Toggle View Sections
+      document.getElementById('step1-view').classList.toggle('hidden', stepNumber !== 1);
+      document.getElementById('step2-view').classList.toggle('hidden', stepNumber !== 2);
+      document.getElementById('step3-view').classList.toggle('hidden', stepNumber !== 3);
+      document.getElementById('step4-view').classList.toggle('hidden', stepNumber !== 4);
+
+      // Update Nav Badges
+      for (let i = 2; i <= 4; i++) {
+        const badge = document.getElementById(`step-badge-${i}`);
+        const label = document.getElementById(`step-label-${i}`);
+        if (i <= stepNumber) {
+          badge.className = "w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs";
+          label.className = "text-rose-400 font-semibold";
+        } else {
+          badge.className = "w-6 h-6 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-xs";
+          label.className = "text-slate-400 font-normal";
+        }
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function filterLanguage(lang) {
+      appState.selectedLanguage = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('bg-rose-600', 'text-white');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
+      });
+      event.target.classList.remove('bg-slate-800', 'text-slate-300');
+      event.target.classList.add('bg-rose-600', 'text-white');
+      renderMoviesList();
+    }
+
+    function handleSearch(query) {
+      appState.searchQuery = query.toLowerCase().trim();
+      renderMoviesList();
+    }
+
+    function renderMoviesList() {
+      const grid = document.getElementById('moviesGrid');
+      grid.innerHTML = '';
+
+      const filtered = MOVIES_DATABASE.filter(m => {
+        const matchLang = appState.selectedLanguage === 'ALL' || m.languages.includes(appState.selectedLanguage);
+        const matchSearch = appState.searchQuery === '' || 
+          m.title.toLowerCase().includes(appState.searchQuery) ||
+          m.genre.toLowerCase().includes(appState.searchQuery) ||
+          m.languages.some(l => l.toLowerCase().includes(appState.searchQuery));
+        return matchLang && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center text-slate-400">
+            <i class="fa-solid fa-film text-4xl mb-3 text-slate-600"></i>
+            <p class="text-base font-semibold">No movies found</p>
+            <p class="text-xs">Try selecting 'All Languages' or a different search keyword.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(movie => {
+        const card = document.createElement('div');
+        card.className = "group bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden hover:border-rose-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-rose-600/10 flex flex-col cursor-pointer";
+        card.onclick = () => selectMovieForBooking(movie);
+
+        card.innerHTML = `
+          <div class="relative aspect-[3/4] overflow-hidden bg-slate-800">
+            <img src="${movie.image}" alt="${movie.title}" onerror="this.src='https://placehold.co/400x550/1e293b/rose?text=${encodeURIComponent(movie.title)}'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-90"></div>
+            
+            <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-xs">
+              <span class="bg-black/70 backdrop-blur-md px-2 py-0.5 rounded text-amber-400 font-bold flex items-center gap-1">
+                <i class="fa-solid fa-star text-[10px]"></i> ${movie.rating} <span class="text-slate-400 font-normal text-[10px]">(${movie.votes})</span>
+              </span>
+              <span class="bg-slate-800/80 px-2 py-0.5 rounded text-slate-200 text-[11px] font-semibold">${movie.certificate}</span>
+            </div>
+          </div>
+          <div class="p-3.5 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="font-bold text-sm text-slate-100 group-hover:text-rose-400 transition-colors line-clamp-1">${movie.title}</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5 line-clamp-1">${movie.genre}</p>
+              <div class="flex flex-wrap gap-1 mt-2">
+                ${movie.languages.map(l => `<span class="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">${l}</span>`).join('')}
+              </div>
+            </div>
+            <button class="w-full mt-3 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold py-2 rounded-lg transition shadow-md shadow-rose-600/20">
+              Book Tickets
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function selectMovieForBooking(movie) {
+      appState.selectedMovie = movie;
+      appState.selectedSeats = [];
+      appState.fnbCart = {};
+      renderTheatresView();
+      goToStep(2);
+    }
+
+    function renderTheatresView() {
+      const movie = appState.selectedMovie;
+      if (!movie) return;
+
+      // Update movie strip summary
+      const strip = document.getElementById('theatreMovieStrip');
+      strip.innerHTML = `
+        <div class="flex items-center gap-4">
+          <img src="${movie.image}" class="w-14 h-20 rounded-lg object-cover shadow-md" onerror="this.src='https://placehold.co/100x150/1e293b/white?text=Poster'">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-xl font-bold text-white">${movie.title}</h2>
+              <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">${movie.certificate}</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">${movie.genre} • ${movie.runtime} • Available in ${movie.languages.join(', ')}</p>
+          </div>
+        </div>
+        <button onclick="goToStep(1)" class="text-xs text-rose-400 hover:text-rose-300 font-semibold underline underline-offset-4">
+          Change Movie
+        </button>
+      `;
+
+      // Render 5 upcoming calendar dates
+      const dateContainer = document.getElementById('datePickerContainer');
+      dateContainer.innerHTML = '';
+      const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+      const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      
+      const today = new Date();
+      for (let i = 0; i < 6; i++) {
+        const d = new Date();
+        d.setDate(today.getDate() + i);
+        const dayStr = dayNames[d.getDay()];
+        const dateNum = d.getDate();
+        const monthStr = monthNames[d.getMonth()];
+        const fullDateStr = `${dayStr}, ${dateNum} ${monthStr}`;
+
+        if (i === 0 && !appState.selectedDate) {
+          appState.selectedDate = fullDateStr;
+        }
+
+        const isSelected = appState.selectedDate === fullDateStr;
+        const btn = document.createElement('button');
+        btn.className = `shrink-0 px-4 py-2.5 rounded-xl border text-center transition ${
+          isSelected 
+            ? 'bg-rose-600 border-rose-500 text-white font-bold shadow-lg shadow-rose-600/30' 
+            : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+        }`;
+        btn.onclick = () => {
+          appState.selectedDate = fullDateStr;
+          renderTheatresView();
+        };
+        btn.innerHTML = `
+          <span class="text-[10px] uppercase block opacity-80">${i === 0 ? 'Today' : (i === 1 ? 'Tomorrow' : dayStr)}</span>
+          <span class="text-base font-extrabold">${dateNum}</span>
+          <span class="text-[10px] block opacity-80">${monthStr}</span>
+        `;
+        dateContainer.appendChild(btn);
+      }
+
+      // Render Theatres for current selected city
+      const theatresList = document.getElementById('theatresList');
+      theatresList.innerHTML = '';
+
+      const cityTheatres = THEATRES_BY_CITY[appState.selectedCity] || THEATRES_BY_CITY['Hyderabad'];
+
+      cityTheatres.forEach(th => {
+        const row = document.createElement('div');
+        row.className = "bg-slate-900 border border-slate-800/90 rounded-2xl p-4 sm:p-5 shadow-sm hover:border-slate-700 transition space-y-3";
+        
+        row.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <h4 class="font-bold text-white text-base flex items-center gap-2">
+                <i class="fa-solid fa-film text-rose-500 text-sm"></i> ${th.name}
+              </h4>
+              <p class="text-xs text-slate-400 mt-0.5">${th.location} • <span class="text-emerald-400">M-Ticket Available</span></p>
+            </div>
+            ${th.cancellation ? '<span class="text-[11px] text-slate-400 flex items-center gap-1.5"><i class="fa-regular fa-circle-check text-emerald-400"></i> Free Cancellation Available</span>' : ''}
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 pt-1">
+            ${generateShowtimePill(th, '09:45 AM', '2D')}
+            ${generateShowtimePill(th, '01:15 PM', 'IMAX 2D')}
+            ${generateShowtimePill(th, '04:30 PM', '4DX 3D')}
+            ${generateShowtimePill(th, '07:45 PM', '2D')}
+            ${generateShowtimePill(th, '10:45 PM', 'IMAX 2D')}
+          </div>
+        `;
+        theatresList.appendChild(row);
+      });
+    }
+
+    function generateShowtimePill(theatre, time, format) {
+      return `
+        <button onclick="selectShowtime('${theatre.id}', '${theatre.name}', '${time}', '${format}')" class="group px-4 py-2 bg-slate-800 hover:bg-rose-600 border border-slate-700 hover:border-rose-500 rounded-xl text-center transition">
+          <span class="text-xs font-bold text-slate-200 group-hover:text-white block">${time}</span>
+          <span class="text-[9px] font-medium text-slate-400 group-hover:text-rose-100 uppercase">${format}</span>
+        </button>
+      `;
+    }
+
+    function selectShowtime(theatreId, theatreName, time, format) {
+      appState.selectedTheatre = { id: theatreId, name: theatreName };
+      appState.selectedTime = time;
+      appState.selectedFormat = format;
+
+      document.getElementById('seatMapMovieTitle').innerText = appState.selectedMovie.title;
+      document.getElementById('seatMapFormat').innerText = format;
+      document.getElementById('seatMapTheatreSub').innerText = `${theatreName} | ${appState.selectedDate}, ${time}`;
+
+      renderSeatLayout();
+      goToStep(3);
+    }
+
+    function renderSeatLayout() {
+      const container = document.getElementById('seatLayoutContainer');
+      container.innerHTML = '';
+      appState.selectedSeats = [];
+      updateSeatCostDisplay();
+
+      // Deterministic occupied seats for realistic preview
+      const occupiedSeatIds = new Set(['A4', 'A5', 'B8', 'B9', 'C3', 'C4', 'C11', 'D5', 'D6', 'E7', 'F2', 'F3', 'G9']);
+
+      // Iterate through Recliner, Prime, Standard tiers
+      Object.keys(SEAT_TIERS).forEach(tierKey => {
+        const tier = SEAT_TIERS[tierKey];
+        const tierWrapper = document.createElement('div');
+        tierWrapper.className = "mb-7 w-full";
+
+        tierWrapper.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-3 text-xs">
+            <span class="font-bold text-slate-300 uppercase tracking-wider">${tier.name}</span>
+            <span class="font-semibold text-rose-400">₹${tier.price} <span class="text-slate-500 text-[10px]">per seat</span></span>
+          </div>
+        `;
+
+        const rowsContainer = document.createElement('div');
+        rowsContainer.className = "space-y-2 flex flex-col items-center";
+
+        tier.rows.forEach(rowLetter => {
+          const rowDiv = document.createElement('div');
+          rowDiv.className = "flex items-center gap-1.5 sm:gap-2";
+
+          // Row Label
+          const label = document.createElement('span');
+          label.className = "w-5 text-[11px] font-bold text-slate-500 text-center";
+          label.innerText = rowLetter;
+          rowDiv.appendChild(label);
+
+          const seatsInRow = tierKey === 'recliner' ? 10 : 14;
+
+          for (let seatNum = 1; seatNum <= seatsInRow; seatNum++) {
+            // Create middle aisle gap
+            if (seatNum === Math.floor(seatsInRow / 2) + 1) {
+              const aisle = document.createElement('div');
+              aisle.className = "w-4 sm:w-6";
+              rowDiv.appendChild(aisle);
+            }
+
+            const seatId = `${rowLetter}${seatNum}`;
+            const isOccupied = occupiedSeatIds.has(seatId);
+
+            const seatBtn = document.createElement('button');
+            seatBtn.id = `seat-${seatId}`;
+            seatBtn.dataset.id = seatId;
+            seatBtn.dataset.tier = tierKey;
+            seatBtn.dataset.price = tier.price;
+
+            if (isOccupied) {
+              seatBtn.className = "seat occupied w-6 h-6 sm:w-7 sm:h-7 rounded bg-slate-800 opacity-25 cursor-not-allowed text-[9px] text-slate-500 font-semibold";
+              seatBtn.disabled = true;
+            } else {
+              seatBtn.className = "seat w-6 h-6 sm:w-7 sm:h-7 rounded bg-slate-800/90 border border-slate-700/80 hover:border-rose-500 text-[10px] font-semibold text-slate-300 flex items-center justify-center";
+              seatBtn.onclick = () => toggleSeatSelection(seatId, tierKey, tier.price);
+            }
+            seatBtn.innerText = seatNum;
+
+            rowDiv.appendChild(seatBtn);
+          }
+
+          rowsContainer.appendChild(rowDiv);
+        });
+
+        tierWrapper.appendChild(rowsContainer);
+        container.appendChild(tierWrapper);
+      });
+    }
+
+    function toggleSeatSelection(seatId, tier, price) {
+      const idx = appState.selectedSeats.findIndex(s => s.id === seatId);
+      const btn = document.getElementById(`seat-${seatId}`);
+
+      if (idx > -1) {
+        // Deselect
+        appState.selectedSeats.splice(idx, 1);
+        btn.classList.remove('bg-rose-600', 'border-rose-500', 'text-white', 'shadow-md', 'shadow-rose-600/50');
+        btn.classList.add('bg-slate-800/90', 'border-slate-700/80', 'text-slate-300');
+      } else {
+        // Indian cinemas max ticket cap per transaction is typically 10
+        if (appState.selectedSeats.length >= 8) {
+          showToast("You can select a maximum of 8 seats per booking", true);
+          return;
+        }
+        // Select
+        appState.selectedSeats.push({ id: seatId, tier, price });
+        btn.classList.add('bg-rose-600', 'border-rose-500', 'text-white', 'shadow-md', 'shadow-rose-600/50');
+        btn.classList.remove('bg-slate-800/90', 'border-slate-700/80', 'text-slate-300');
+      }
+
+      updateSeatCostDisplay();
+    }
+
+    function updateSeatCostDisplay() {
+      const count = appState.selectedSeats.length;
+      const totalCost = appState.selectedSeats.reduce((acc, s) => acc + s.price, 0);
+
+      document.getElementById('selectedSeatsCount').innerText = count;
+      document.getElementById('selectedSeatsCost').innerText = `₹${totalCost}`;
+
+      const proceedBtn = document.getElementById('proceedToPayBtn');
+      proceedBtn.disabled = count === 0;
+    }
+
+    function proceedToPaymentView() {
+      if (appState.selectedSeats.length === 0) return;
+      renderFnbItems();
+      updatePaymentSummary();
+      goToStep(4);
+    }
+
+    function renderFnbItems() {
+      const container = document.getElementById('fnbContainer');
+      container.innerHTML = '';
+
+      FNB_ITEMS.forEach(item => {
+        const qty = appState.fnbCart[item.id] || 0;
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between gap-3 shadow-sm";
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+              <i class="fa-solid ${item.icon}"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white line-clamp-1">${item.name}</h4>
+              <p class="text-[10px] text-slate-400 line-clamp-1">${item.desc}</p>
+              <span class="text-xs font-bold text-emerald-400">₹${item.price}</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            ${qty === 0 ? `
+              <button onclick="updateFnbQty('${item.id}', 1)" class="bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-700 transition">
+                + ADD
+              </button>
+            ` : `
+              <div class="flex items-center border border-slate-700 rounded-lg overflow-hidden bg-slate-800 text-xs">
+                <button onclick="updateFnbQty('${item.id}', -1)" class="px-2.5 py-1 hover:bg-slate-700 text-slate-300 font-bold">-</button>
+                <span class="px-2 font-bold text-white">${qty}</span>
+                <button onclick="updateFnbQty('${item.id}', 1)" class="px-2.5 py-1 hover:bg-slate-700 text-slate-300 font-bold">+</button>
+              </div>
+            `}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function updateFnbQty(itemId, change) {
+      const current = appState.fnbCart[itemId] || 0;
+      const next = current + change;
+      if (next <= 0) {
+        delete appState.fnbCart[itemId];
+      } else {
+        appState.fnbCart[itemId] = next;
+      }
+      renderFnbItems();
+      updatePaymentSummary();
+    }
+
+    function updatePaymentSummary() {
+      // Basic ticket total
+      const ticketTotal = appState.selectedSeats.reduce((sum, s) => sum + s.price, 0);
+      
+      // Indian Internet Handling / Convenience fee (~ ₹30 per seat) + 18% GST
+      const convenienceBase = appState.selectedSeats.length * 32;
+      const convenienceGst = Math.round(convenienceBase * 0.18);
+      const totalFees = convenienceBase + convenienceGst;
+
+      // F&B total
+      let fnbTotal = 0;
+      Object.keys(appState.fnbCart).forEach(id => {
+        const item = FNB_ITEMS.find(f => f.id === id);
+        if (item) {
+          fnbTotal += item.price * appState.fnbCart[id];
+        }
+      });
+
+      const grandTotal = ticketTotal + totalFees + fnbTotal;
+
+      // Update summary texts
+      document.getElementById('summaryMovie').innerText = `${appState.selectedMovie.title} (${appState.selectedFormat})`;
+      document.getElementById('summaryTheatre').innerText = appState.selectedTheatre.name;
+      document.getElementById('summaryShowtime').innerText = `${appState.selectedDate} | ${appState.selectedTime}`;
+      
+      const seatsString = appState.selectedSeats.map(s => s.id).join(', ');
+      document.getElementById('summarySeats').innerText = `${seatsString} (${appState.selectedSeats.length} Tickets)`;
+
+      document.getElementById('sumBaseFare').innerText = `₹${ticketTotal}`;
+      document.getElementById('sumFees').innerText = `₹${totalFees}`;
+      document.getElementById('sumFnb').innerText = `₹${fnbTotal}`;
+      document.getElementById('sumTotalPayable').innerText = `₹${grandTotal}`;
+      document.getElementById('finalPayBtnLabel').innerText = `Pay ₹${grandTotal} Securely`;
+    }
+
+    function selectPaymentMethod(method) {
+      appState.paymentMethod = method;
+      const upiBtn = document.getElementById('btnMethodUPI');
+      const cardBtn = document.getElementById('btnMethodCard');
+      const upiBox = document.getElementById('upiBox');
+      const cardBox = document.getElementById('cardBox');
+
+      if (method === 'upi') {
+        upiBtn.className = "payment-method-btn active p-2.5 rounded-xl border border-rose-500 bg-rose-500/10 text-xs font-semibold flex items-center justify-center gap-2 text-rose-400";
+        cardBtn.className = "payment-method-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold flex items-center justify-center gap-2 text-slate-400";
+        upiBox.classList.remove('hidden');
+        cardBox.classList.add('hidden');
+      } else {
+        cardBtn.className = "payment-method-btn active p-2.5 rounded-xl border border-rose-500 bg-rose-500/10 text-xs font-semibold flex items-center justify-center gap-2 text-rose-400";
+        upiBtn.className = "payment-method-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-xs font-semibold flex items-center justify-center gap-2 text-slate-400";
+        cardBox.classList.remove('hidden');
+        upiBox.classList.add('hidden');
+      }
+    }
+
+    function triggerPaymentProcessing() {
+      const grandTotal = document.getElementById('sumTotalPayable').innerText;
+      
+      showToast("Redirecting to Indian banking payment gateway...");
+
+      // Simulate payment network roundtrip
+      setTimeout(() => {
+        const randomBookingNum = 'CIN-' + Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('modalBookingId').innerText = randomBookingNum;
+        document.getElementById('modalMovieName').innerText = appState.selectedMovie.title;
+        document.getElementById('modalCinemaName').innerText = `${appState.selectedTheatre.name}, ${appState.selectedCity}`;
+        document.getElementById('modalDate').innerText = appState.selectedDate;
+        document.getElementById('modalTime').innerText = appState.selectedTime;
+        document.getElementById('modalSeats').innerText = appState.selectedSeats.map(s => s.id).join(', ');
+        document.getElementById('modalPaidAmount').innerText = grandTotal;
+
+        document.getElementById('ticketModal').classList.remove('hidden');
+      }, 900);
+    }
+
+    function closeConfirmationModal() {
+      document.getElementById('ticketModal').classList.add('hidden');
+      resetToHome();
+      showToast("Booking stored in your tickets history!");
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMoviesList();
+    });
+  </script>
+</body>
+</html>
