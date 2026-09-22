@@ -14,7 +14,7 @@ pipeline {
         }
         stage ("container") {
             steps {
-                sh 'docker run -p 1111:3000 -d --name nodeapp_${BUILD_NUMBER} nodeimg:${BUILD_NUMBER}'
+                sh 'docker run -p 1111:80 -d --name nodeapp_${BUILD_NUMBER} nodeimg:${BUILD_NUMBER}'
             }
         }
     }
