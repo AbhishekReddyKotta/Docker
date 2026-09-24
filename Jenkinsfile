@@ -14,7 +14,7 @@ pipeline {
         }
         stage ("container") {
             steps {
-                sh 'docker run -p 1111:80 -d --name pythonapp_${BUILD_NUMBER} pythonimg:${BUILD_NUMBER}'
+                sh 'docker run -p 1111:8000 -d --name pythonapp_${BUILD_NUMBER} pythonimg:${BUILD_NUMBER}'
             }
         }
     }
